@@ -2,43 +2,54 @@ const submit = document.querySelector('#submit')
 const container = document.querySelector('body > main > section')
 const ratingContainer = document.querySelector('.rating_container')
 
-ratingContainer.addEventListener('click', event => {
-    const clickedElement = event.target
-    const rating = Number(clickedElement.dataset.rating)
+const ratingContainerElements = Array.from(ratingContainer.children)
 
-    if (clickedElement.dataset.rating){
-        Array.from(ratingContainer.children).forEach(ratingElement => {
-            if (Array.from(ratingElement.classList).includes('checked_rating')) {
-                ratingElement.classList.remove('checked_rating')
-            }
-        })
+const clearContainer = () => Array.from(container.children)
+    .forEach(element => element.remove())
 
-        clickedElement.classList.add('checked_rating')
+const getCheckedElement = ratingElement => Array.from(ratingElement.classList)
+    .includes('checked_rating')
+
+const getRating = (ratingContainerElements) => ratingContainerElements
+    .find(getCheckedElement).dataset.rating
+
+const getThankYouElements = ratingValue => `<img src="./images/illustration-thank-you.svg" alt="thank you">
+<span class="thank_you">You selected ${ratingValue} out of 5</span>
+<h2>Thank you!</h2>
+<p>We appreciate you taking the time to give a rating. If you ever need more support, 
+  don’t hesitate to get in touch!</p>`
+
+const setContainer = (ratingValue, className) => {
+    container.classList.add(className)
+    container.innerHTML = getThankYouElements(ratingValue)
+}
+
+const togleCheckedRating = (ratingElement, target) => {
+    const isCheckedRating = getCheckedElement(ratingElement)
+
+    if (isCheckedRating) {
+        ratingElement.classList.remove('checked_rating')
     }
-})
 
-submit.addEventListener('click', event => {
-    event.preventDefault()
+    target.classList.add('checked_rating')
+}
 
-    //clean section container
-    const containerElements = Array.from(container.children)
-    containerElements.forEach(element => element.remove())
+const setCheckedRating = ({ target }) => {
+    const isTargertRating = target.dataset.rating
 
-    //get rating
-    const ratingValue = Array.from(ratingContainer.children).find(ratingElement => {
-        if (Array.from(ratingElement.classList).includes('checked_rating')) {
-            return ratingElement
+    ratingContainerElements.forEach(ratingElement => {
+        if (isTargertRating) {
+            togleCheckedRating(ratingElement, target)
         }
     })
+}
 
-    //create and insert 'thankyou' elements in container
-    const thankYouElements = `<img src="./images/illustration-thank-you.svg" alt="thank you">
-    <span class="thank_you">You selected ${ratingValue.dataset.rating} out of 5</span>
-    <h2>Thank you!</h2>
-    <p>We appreciate you taking the time to give a rating. If you ever need more support, 
-      don’t hesitate to get in touch!</p>`
+const handleThankyouContainer = event => {
+    event.preventDefault()
 
-    container.classList.add('container')
-    container.innerHTML = thankYouElements
-})
+    clearContainer()
+    setContainer(getRating(ratingContainerElements), 'container')
+}
 
+ratingContainer.addEventListener('click', setCheckedRating)
+submit.addEventListener('click', handleThankyouContainer)
